@@ -105,8 +105,9 @@ public Jump_Create(id)
     pev(id, pev_origin, origin);
     pev(id, pev_v_angle, v_angles);
 
-    client_print_color(id, print_chat, "^4%s^1 Jump ^3%s^1 created. (%f, %f, %f) pitch: %f, yaw: %f", PLUGIN_TAG, g_jumpname, origin[0], origin[2], origin[1], v_angles[0], v_angles[1]);
-    client_print_color(id, print_chat, "^4%f %f %f^1", v_angles[0], v_angles[1], v_angles[2]);
+    // Dev Logs
+    // client_print_color(id, print_chat, "^4%s^1 Jump ^3%s^1 created. (%f, %f, %f) pitch: %f, yaw: %f", PLUGIN_TAG, g_jumpname, origin[0], origin[2], origin[1], v_angles[0], v_angles[1]);
+    // client_print_color(id, print_chat, "^4%f %f %f^1", v_angles[0], v_angles[1], v_angles[2]);
 
     // Write JSON
     new JSON:jump_data = json_init_object();
@@ -202,8 +203,9 @@ public Jump_Set(id)
         set_pev(id, pev_angles, jump_v_angle);
         set_pev(id, pev_fixangle, 1);
 
-        client_print_color(id, print_chat, "^4%s^1 Jump ^3%s^1 (created by ^3%s^1) has been set.", PLUGIN_TAG, g_jumpname, author);
-        client_print_color(id, print_chat, "^4%s^1 (%f, %f, %f) yaw: %f, pitch %f", PLUGIN_TAG, jump_origin[0], jump_origin[2], jump_origin[1], jump_v_angle[0], jump_v_angle[1]);
+        // Dev Logs
+        // client_print_color(id, print_chat, "^4%s^1 Jump ^3%s^1 (created by ^3%s^1) has been set.", PLUGIN_TAG, g_jumpname, author);
+        // client_print_color(id, print_chat, "^4%s^1 (%f, %f, %f) yaw: %f, pitch %f", PLUGIN_TAG, jump_origin[0], jump_origin[2], jump_origin[1], jump_v_angle[0], jump_v_angle[1]);
 
         json_free(jump_data);
     }
