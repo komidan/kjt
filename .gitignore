@@ -1,0 +1,9 @@
+.vscode/
+compiler/
+*.bat
+*.o
+*.so
+*.dll
+*.obj
+*.lib
+*.py
