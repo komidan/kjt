@@ -2,13 +2,14 @@
 ![trickyumpslogo](res/trickyumps_3.png)
 
 # komi's Trickjumps
-The goal with this project is to create a plugin that creates an environment that allows for creativity when it comes to TrickJumping.
+This plugin is mean't to make trickjumping more popular by creating commands that make sharing jumps easier.
 
 ### Feature List
-| Name                            | Description                                  | Status |
-| ------------------------------- | -------------------------------------------- | :----: |
-| Position/Angle Saving           | Ability to save positions with a custom name |  WIP   |
-| yet to figure out more ideas... |
+| Name                           | Description                                                                                | Status |
+| ------------------------------ | ------------------------------------------------------------------------------------------ | :----: |
+| Jump Creation/Deletion/Setting | Ability to manage jumps. Saving, Deleting, and Setting.                                    |   🟢    |
+| Jump Sharing                   | By typing a command, receive an encoded string which you can load to create a jump locally |   🟡    |
+| Fixes                          | Never.                                                                                     |   🔴    |
 
 ### Commands
 `/createjump <name>` - Creates a jump entry to the local database.\
