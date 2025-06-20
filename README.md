@@ -12,8 +12,8 @@ This plugin is mean't to make trickjumping more popular by creating commands tha
 | Fixes                          | Never.                                                                                     |   🔴    |
 
 ### Commands
-`/createjump <name>` - Creates a jump entry to the local database.\
-`/deletejump <name>` - Deletes a jump entry from the local database.\
-`/setjump <name>` - Searches the local sqlite database and if name found, teleports or 'sets' the jump.\
+`/createjump <name>` - Creates a jump object and saves to local file.\
+`/deletejump <name>` - Deletes a jump object from local file.\
+`/setjump <name>` - Searches the local file and if name found, teleports or 'sets' the jump.\
 
 more on the way...
