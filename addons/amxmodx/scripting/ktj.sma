@@ -6,7 +6,7 @@
 #pragma semicolon 1
 
 #define PLUGIN "komi's TrickJumps"
-#define VERSION "0.3u"
+#define VERSION "0.4u"
 #define AUTHOR "komidan"
 
 #define PLUGIN_TAG "[K-TJ]"
@@ -35,7 +35,7 @@ public plugin_init()
 
         if (!json_serial_to_file(data, PLUGIN_FILE))
         {
-            server_print("[K-JT] File failed to be created.");
+            server_print("%s File failed to be created.", PLUGIN_TAG);
         }
     }
     else
@@ -46,7 +46,6 @@ public plugin_init()
             g_ktj_jumps = json_init_object();
         }
     }
-
 }
 
 public plugin_end()
@@ -56,6 +55,9 @@ public plugin_end()
         json_free(g_ktj_jumps);
         g_ktj_jumps = Invalid_JSON;
     }
+
+    log_amx("Plugin ended with no errors! Thanks for using my plugin, and have a lovely day!");
+    return PLUGIN_HANDLED;
 }
 
 public Chat_Command_Handler(id)
@@ -80,13 +82,9 @@ public Chat_Command_Handler(id)
     {
         Jump_Set(id);
     }
-    else if (equal(cmd, "/jumps"))
-    {
-        Set_Jump_Menu(id);
-    }
     else if (equal(cmd, "/ktj"))
     {
-        client_print_color(id, print_chat, "^4%s^1 komi's TrickJumping version %s", PLUGIN_TAG, VERSION);
+        client_print_color(id, print_chat, "^4%s^1 komi's TrickJumping ^3v%s^1", PLUGIN_TAG, VERSION);
     }
 
     return PLUGIN_HANDLED;

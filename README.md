@@ -2,7 +2,13 @@
 ![trickyumpslogo](res/trickyumps_3.png)
 
 # komi's Trickjumps
-This plugin is meant to make trickjumping more popular by creating commands that make sharing and managing jumps easier.
+This plugin is meant to make trickjumping more popular by creating commands that enable sharing and managing jumps easier.
+
+### Installation
+Head over to the [releases](https://github.com/komidan/ktj/releases) and download the latest one, build from source, or to get the most up-to-date with all commits you can use `.\addons\amxmodx\plugins\ktj.amxx` from source. It's kept up to date, but keep in mind it's most likely very unstable! Follow these steps once you have the plugin file installed:
+1. Move `ktj.amxx` to `.\Half-life\cstrike\addons\amxmodx\plugins\`.
+2. Edit `...\addons\amxmodx\configs\plugins.ini` by adding `ktj.amxx` to the bottom of the file.
+3. Launch Counter-Strike 1.6 to see if it worked. If not then... ask someone?
 
 ### Feature List
 | Name             | Description                                                                                 | Status |
@@ -21,10 +27,9 @@ This plugin is meant to make trickjumping more popular by creating commands that
 ⚪ Not-Started
 
 ### Commands
-`/createjump <name>` - Creates a jump.\
-`/deletejump <name>` - Deletes a jump.\
-`/setjump <name>` - Sets jump, teleport player to location. Don't pass <name> for jump list.\
-`/jumps` - Opens the jumps list.\
+`/createjump <name>` - Creates a jump with \<name\> as a specifier.\
+`/deletejump <name>` - Deletes a jump. Don't pass any arguments for delete list.\
+`/setjump <name>` - Sets jump, teleports player to location. Don't pass any arguments for jump list.\
 `/ktj` - About the plugin.
 
 more on the way...
