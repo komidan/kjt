@@ -9,12 +9,12 @@
 #define VERSION "0.3u"
 #define AUTHOR "komidan"
 
-#define PLUGIN_TAG "[KJT]"
+#define PLUGIN_TAG "[K-TJ]"
 #define PLUGIN_FILE "addons/amxmodx/data/ktj_jumps.json"
 
 new g_args[64];
-new JSON:g_ktj_jumps = Invalid_JSON;
 new current_map[32];
+new JSON:g_ktj_jumps = Invalid_JSON;
 
 public plugin_init()
 {
@@ -35,7 +35,7 @@ public plugin_init()
 
         if (!json_serial_to_file(data, PLUGIN_FILE))
         {
-            server_print("[KJT] File failed to be created.");
+            server_print("[K-JT] File failed to be created.");
         }
     }
     else
@@ -141,9 +141,9 @@ public Jump_Create(id)
     }
 
     client_print_color(id, print_chat, "^4%s^1 Jump ^3%s^1 created.", PLUGIN_TAG, g_args);
-    json_free(map_level);
-    json_free(jump_data);
 
+    json_free(jump_data);
+    json_free(map_level);
     return PLUGIN_HANDLED;
 
 }
@@ -240,43 +240,9 @@ public Jump_Set(id)
     set_pev(id, pev_fixangle, 1);
 
     client_print_color(id, print_chat, "^4%s^1 Jump ^3%s^1 has been set.", PLUGIN_TAG, g_args);
-
     json_free(jump_data);
-
     return PLUGIN_HANDLED;
 }
-
-// public Jump_List(id)
-// {
-//     new menu = menu_create("[KTJ] Jumps Menu", "Menu_Handler");
-
-//     new key[64]; // jump name
-//     new JSON:jump_data;
-
-//     new map[32], currmap[32];
-
-//     get_mapname(currmap, charsmax(currmap));
-
-//     new count = json_object_get_count(g_ktj_jumps);
-//     for (new i = 0; i < count; i++)
-//     {
-//         json_object_get_name(g_ktj_jumps, i, key, charsmax(key));
-//         jump_data = json_object_get_value(g_ktj_jumps, key);
-//         json_object_get_string(jump_data, "map", map, charsmax(map));
-
-//         if (equal(map, currmap))
-//         {
-//             menu_additem(menu, key, key);
-//         }
-//     }
-
-//     json_free(jump_data);
-
-//     menu_setprop(menu, MPROP_EXIT, MEXIT_ALL);
-//     menu_display(id, menu, 0);
-
-//     return PLUGIN_HANDLED;
-// }
 
 public Jump_List(id)
 {
@@ -287,7 +253,6 @@ public Jump_List(id)
     new currmap[32];
     get_mapname(currmap, charsmax(currmap));
 
-    // Get JSON object for the current map
     if (!json_object_has_value(g_ktj_jumps, currmap))
     {
         client_print_color(id, print_chat, "^4%s^1 No jumps found for this map.", PLUGIN_TAG);
@@ -300,16 +265,12 @@ public Jump_List(id)
     new count = json_object_get_count(map_data);
     for (new i = 0; i < count; i++)
     {
-        // Get each jump name and add to menu
         json_object_get_name(map_data, i, key, charsmax(key));
         menu_additem(menu, key, key);
     }
 
-    // DO NOT free map_data if json_object_get_value only gives a reference
-
     menu_setprop(menu, MPROP_EXIT, MEXIT_ALL);
     menu_display(id, menu, 0);
-
     return PLUGIN_HANDLED;
 }
 
