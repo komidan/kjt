@@ -13,10 +13,9 @@ Download the latest [release](https://github.com/komidan/ktj/releases), build fr
 ### Feature List
 | Name             | Description                                                                                 | Status |
 | ---------------- | ------------------------------------------------------------------------------------------- | :----: |
-| Jump Management  | Ability to manage jumps. Saving, Deleting, and Setting.                                     |   🟢    |
-| Jump List        | A menu that shows all saved jumps.                                                          |   🟢    |
-| Jump Sharing     | By typing a command, receive an encoded string which you can load to create a jump locally. |   🔵    |
-| Jump Measurement | Measure a start and end location for a jump to track if you land the jump or not?           |   ⚪    |
+| Jump Management  | Ability to manage jumps, including creating, deleting, and setting them.                    |   🟢    |
+| Jump Sharing     | By typing a command, receive an encoded string which you can load to create a jump locally. |   🟡    |
+| Jump Measurement | Measure a start and end location for a jump to track if you land the jump or not (?).       |   ⚪    |
 
 #### !!! NEED SUGGESTIONS, PLEASE GIVE ME JUICY SUGGESTIONS !!!
 
@@ -33,3 +32,9 @@ Download the latest [release](https://github.com/komidan/ktj/releases), build fr
 `/ktj` - About the plugin.
 
 more on the way...
+
+## F.A.Q
+### 1. **How to fix "Load Error 17 (Invalid file format or version)" error?**
+This error can mean one of two things according to [this](https://forums.alliedmods.net/showthread.php?t=244801) post on AlliedMods.
+1. AMX Mod X is not running which you can check by typing `meta list` and seeing `AMX Mod X` in the list.
+2. You have an outdated AMX Mod X version. This plugin is compiled using `AMX Mod X Compiler 1.10.0.5467` Update it.

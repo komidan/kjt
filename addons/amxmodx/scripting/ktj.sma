@@ -2,11 +2,12 @@
 #include <fakemeta>
 #include <string>
 #include <json>
+#include <ktj>
 
 #pragma semicolon 1
 
 #define PLUGIN "komi's TrickJumps"
-#define VERSION "0.4u"
+#define VERSION "0.4.2u"
 #define AUTHOR "komidan"
 
 #define PLUGIN_TAG "[K-TJ]"
@@ -23,14 +24,15 @@ public plugin_init()
     register_clcmd("say", "chat_command_handler");
     register_clcmd("say_team", "chat_command_handler");
 
-    register_concmd("exportjump", "Jump_Export");
-    register_concmd("importjump", "Jump_Import");
+    register_concmd("exportjump", "jump_export");
+    register_concmd("importjump", "jump_import");
 
     get_mapname(current_map, charsmax(current_map));
 
     // Create file if doesn't exist.
     if (!file_exists(PLUGIN_FILE))
     {
+        server_print("%s Plugin file does not exist, creating...", PLUGIN_TAG);
         new JSON:data = json_init_object();
 
         if (!json_serial_to_file(data, PLUGIN_FILE))
@@ -38,13 +40,10 @@ public plugin_init()
             server_print("%s File failed to be created.", PLUGIN_TAG);
         }
     }
-    else
+    g_ktj_jumps = json_parse(PLUGIN_FILE, true);
+    if (g_ktj_jumps == Invalid_JSON)
     {
-        g_ktj_jumps = json_parse(PLUGIN_FILE, true);
-        if (g_ktj_jumps == Invalid_JSON)
-        {
-            g_ktj_jumps = json_init_object();
-        }
+        server_print("%s Invalid_JSON on g_ktj_jumps", PLUGIN_TAG);
     }
 }
 
@@ -56,7 +55,7 @@ public plugin_end()
         g_ktj_jumps = Invalid_JSON;
     }
 
-    log_amx("Plugin ended with no errors! Thanks for using my plugin, and have a lovely day!");
+    log_amx("Thanks for using my plugin and have a lovely day. -komi");
     return PLUGIN_HANDLED;
 }
 
@@ -69,6 +68,7 @@ public chat_command_handler(id)
     new cmd[64], arg1[64];
     parse(args, cmd, charsmax(cmd), arg1, charsmax(arg1));
 
+    // Handler for say commands, checks cmd argument.
     g_args = arg1;
     if (equal(cmd, "/createjump"))
     {
@@ -96,11 +96,11 @@ public jump_create(id)
 
     if (equal(g_args, ""))
     {
-        client_print_color(id, print_chat, "^4%s^1 Usage: /createjump <name>", PLUGIN_TAG);
+        client_print_color(id, print_chat, "^4%s^1 Usage: /createjump <jump_name>", PLUGIN_TAG);
         return PLUGIN_HANDLED;
     }
 
-    if (json_object_has_value(g_ktj_jumps, g_args))
+    if (ktj_jump_exists(g_ktj_jumps, current_map, g_args))
     {
         client_print_color(id, print_chat, "^4%s^1 Warning: Jump %s already existed, it will be overwritten.", PLUGIN_TAG, g_args);
     }
@@ -108,6 +108,7 @@ public jump_create(id)
     new Float:origin[3];
     new Float:v_angles[3];
 
+    // Get the player's world position, and view angles.
     pev(id, pev_origin, origin);
     pev(id, pev_v_angle, v_angles);
 
@@ -116,6 +117,7 @@ public jump_create(id)
         ? json_object_get_value(g_ktj_jumps, current_map)
         : json_init_object();
 
+    // Need multiple objects for multiple levels to json.
     new JSON:jump_data = json_init_object();
 
     json_object_set_real(jump_data, "posx", origin[0]);
@@ -189,34 +191,36 @@ public jump_set(id)
         return PLUGIN_HANDLED;
     }
 
-    new key[64];
-    new JSON:map_level, JSON:jump_data;
-    new bool:found = false;
+    // new key[64];
+    // new JSON:map_level;
+    // new bool:found = false;
 
-    for (new i = 0; i < json_object_get_count(g_ktj_jumps); i++)
-    {
-        json_object_get_name(g_ktj_jumps, i, key, charsmax(key));
-        map_level = json_object_get_value(g_ktj_jumps, key);
+    new JSON:jump_data = ktj_jump_get(g_ktj_jumps, current_map, g_args);
+    // // Loop through g_ktj_jumps to find the jump name's contents of 'g_args'.
+    // for (new i = 0; i < json_object_get_count(g_ktj_jumps); i++)
+    // {
+    //     json_object_get_name(g_ktj_jumps, i, key, charsmax(key));
+    //     map_level = json_object_get_value(g_ktj_jumps, key);
 
-        if (json_object_has_value(map_level, g_args))
-        {
-            if (!equal(key, current_map))
-            {
-                client_print_color(id, print_chat, "^4%s^1 Jump ^3%s^1 is on the map: ^3%s^1.", PLUGIN_TAG, g_args, key);
-                return PLUGIN_HANDLED;
-            }
+    //     if (json_object_has_value(map_level, g_args))
+    //     {
+    //         if (!equal(key, current_map))
+    //         {
+    //             client_print_color(id, print_chat, "^4%s^1 Jump ^3%s^1 is on the map: ^3%s^1.", PLUGIN_TAG, g_args, key);
+    //             return PLUGIN_HANDLED;
+    //         }
 
-            jump_data = json_object_get_value(map_level, g_args);
-            found = true;
-            break;
-        }
-    }
+    //         jump_data = json_object_get_value(map_level, g_args);
+    //         found = true;
+    //         break;
+    //     }
+    // }
 
-    if (!found || jump_data == Invalid_JSON)
-    {
-        client_print_color(id, print_chat, "^4%s^1 Jump ^3%s^1 does not exist.", PLUGIN_TAG, g_args);
-        return PLUGIN_HANDLED;
-    }
+    // if (!found || jump_data == Invalid_JSON)
+    // {
+    //     client_print_color(id, print_chat, "^4%s^1 Jump ^3%s^1 does not exist.", PLUGIN_TAG, g_args);
+    //     return PLUGIN_HANDLED;
+    // }
 
     // Set player position and view angle
     new Float:jump_origin[3];
@@ -248,7 +252,7 @@ public jump_set(id)
  */
 public delete_jump_menu(id)
 {
-    new menu = menu_create("[K-TJ] Delete Jumps Menu", "delete_jump_menu_Handler");
+    new menu = menu_create("[K-TJ] Delete Jump", "delete_jump_menu_handler");
 
     new key[64]; // Jump name
 
@@ -293,7 +297,7 @@ public delete_jump_menu_handler(id, menu, item)
 
 public set_jump_menu(id)
 {
-    new menu = menu_create("[K-TJ] Jumps Menu", "set_jump_menu_Handler");
+    new menu = menu_create("[K-TJ] Jumps Menu", "set_jump_menu_handler");
 
     new key[64]; // Jump name
 
@@ -340,14 +344,102 @@ public set_jump_menu_handler(id, menu, item)
 /**
  * Problems I've faced with these functions are engine constraints.
  * Can't print >256 characters to the console (?). No idea
- * how to get around this engine limitation. Oh Brainstorming!
+ * how to get around this engine limitation. Oh 1.6!
  */
 public jump_export(id)
 {
+    new arg[32]; // Name of the jump to export.
+    read_argv(id, arg, charsmax(arg));
+    remove_quotes(arg);
+
+    if (equal(arg, ""))
+    {
+        client_print(id, print_console, "%s Usage: jumpexport <jump_name>", PLUGIN_TAG);
+        return PLUGIN_HANDLED;
+    }
+
+    new JSON:jump_data = ktj_jump_get(g_ktj_jumps, current_map, arg);
+    new JSON:jump_name = json_init_object();
+    new JSON:final_json = json_init_object();
+    json_object_set_value(jump_name, arg, jump_data);
+    json_object_set_value(final_json, current_map, jump_name);
+
+    new json_string[1024];
+    json_serial_to_string(final_json, json_string, charsmax(json_string));
+
+    client_print(id, print_console, "%s Exported jump: %s | Copy the JSON text below.", PLUGIN_TAG, arg);
+    print_long_string(id, json_string);
+
+    json_free(jump_data);
+    json_free(jump_name);
+    json_free(final_json);
     return PLUGIN_HANDLED;
 }
 
 public jump_import(id)
 {
+    new arg[1024];
+    read_args(arg, charsmax(arg));
+
+    new jump_key[64];
+    new map_key[64];
+
+    server_print("ARG : %s", arg);
+
+    if (equal(arg, ""))
+    {
+        client_print(id, print_console, "%s Usage: jumpimport <json>", PLUGIN_TAG);
+        return PLUGIN_HANDLED;
+    }
+
+    // Verify arg is valid JSON
+    new JSON:imported_json = json_parse(arg);
+    if (imported_json == Invalid_JSON)
+    {
+        client_print(id, print_console, "%s Failed to parse JSON.", PLUGIN_TAG);
+        return PLUGIN_HANDLED;
+    }
+
+    // Extract the map key from imported json.
+    json_object_get_name(imported_json, 0, map_key, charsmax(map_key));
+
+    if (equal(map_key, ""))
+    {
+        client_print(id, print_console, "%s No map key found in JSON.", PLUGIN_TAG);
+        json_free(imported_json);
+        return PLUGIN_HANDLED;
+    }
+
+    // Get the imported json's map object.
+    new JSON:imported_map_level = json_object_get_value(imported_json, map_key);
+    if (!json_object_has_value(g_ktj_jumps, map_key))
+    {
+        json_object_set_value(g_ktj_jumps, map_key, imported_map_level);
+    }
+    else
+    {
+        // Map already exists inside file
+        json_object_get_name(imported_map_level, 0, jump_key, charsmax(jump_key));
+
+        new JSON:map_level = json_object_get_value(g_ktj_jumps, map_key);
+        new JSON:jump_data = ktj_jump_get(imported_json, map_key, jump_key);
+
+        json_object_set_value(map_level, jump_key, jump_data);
+        json_object_set_value(g_ktj_jumps, map_key, map_level);
+
+        json_free(jump_data);
+        json_free(map_level);
+    }
+
+    // Save file.
+    if (!json_serial_to_file(g_ktj_jumps, PLUGIN_FILE))
+    {
+        client_print_color(id, print_chat, "^4%s^1 JSON Failed to Save");
+        return PLUGIN_HANDLED;
+    }
+
+    client_print(id, print_console, "%s Jump %s was imported to map %s.", PLUGIN_TAG, jump_key, map_key);
+    json_free(imported_map_level);
+    json_free(imported_json);
     return PLUGIN_HANDLED;
 }
