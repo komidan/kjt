@@ -25,6 +25,6 @@ This plugin is mean't to make trickjumping more popular by creating commands tha
 `/deletejump <name>` - Deletes a jump.\
 `/setjump <name>` - Sets jump, teleport player to location.\
 `/share <name>` - Hashes the jump data to be shared (WIP).\
-`/import <hashed_string>` - Imports a hashed jump data (WIP).\
+`/import <hashed_string>` - Imports a hashed jump data (WIP).
 
 more on the way...

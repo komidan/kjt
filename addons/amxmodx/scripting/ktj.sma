@@ -11,8 +11,20 @@
 
 #define PLUGIN_TAG "[KJT]"
 
+/**
+ * JSON Format:
+ *
+ * "<mapname>": {
+ *     "<jump-name>": {
+ *         <jump-data>,
+ *     }
+ * }
+ *
+ */
+
 new g_args[64];
 new JSON:g_ktj_jumps = Invalid_JSON;
+new current_map[32];
 
 public plugin_init()
 {
@@ -23,6 +35,8 @@ public plugin_init()
 
     register_concmd("exportjump", "Jump_Export");
     register_concmd("importjump", "Jump_Import");
+
+    get_mapname(current_map, charsmax(current_map));
 
     // Create file if doesn't exist.
     if (!file_exists("addons/amxmodx/data/kjt_jumps.json"))
@@ -106,6 +120,10 @@ public Jump_Create(id)
     pev(id, pev_v_angle, v_angles);
 
     // Write JSON
+    new JSON:map_level = json_object_has_value(g_ktj_jumps, current_map)
+        ? json_object_get_value(g_ktj_jumps, current_map)
+        : json_init_object();
+
     new JSON:jump_data = json_init_object();
 
     json_object_set_real(jump_data, "posx", origin[0]);
@@ -114,9 +132,13 @@ public Jump_Create(id)
 
     json_object_set_real(jump_data, "yaw", v_angles[1]);
     json_object_set_real(jump_data, "pitch", v_angles[0]);
-    // Don't set ROLL value here, don't need it!
 
-    json_object_set_value(g_ktj_jumps, g_args, jump_data);
+    json_object_set_value(map_level, g_args, jump_data);
+
+    if (!json_object_has_value(g_ktj_jumps, current_map))
+    {
+        json_object_set_value(g_ktj_jumps, current_map, map_level);
+    }
 
     if (!json_serial_to_file(g_ktj_jumps, "addons/amxmodx/data/kjt_jumps.json"))
     {
@@ -125,6 +147,7 @@ public Jump_Create(id)
     }
 
     client_print_color(id, print_chat, "^4%s^1 Jump ^3%s^1 created.", PLUGIN_TAG, g_args);
+    json_free(map_level);
     json_free(jump_data);
 
     return PLUGIN_HANDLED;
@@ -141,12 +164,14 @@ public Jump_Delete(id)
         return PLUGIN_HANDLED;
     }
 
-    if (!json_object_has_value(g_ktj_jumps, g_args))
+    new JSON:map_level = json_object_get_value(g_ktj_jumps, current_map);
+
+    if (!json_object_has_value(map_level, g_args))
     {
         client_print_color(id, print_chat, "^4%s^1 Jump ^3%s^1 does not exist.", PLUGIN_TAG, g_args);
     }
 
-    if (json_object_remove(g_ktj_jumps, g_args))
+    if (json_object_remove(map_level, g_args))
     {
         client_print_color(id, print_chat, "^4%s^1 Jump ^3%s^1 deleted successfully.", PLUGIN_TAG, g_args);
     }
@@ -157,12 +182,14 @@ public Jump_Delete(id)
         client_print_color(id, print_chat, "^4%s^1 JSON Failed to Save");
     }
 
+    json_free(map_level);
     return PLUGIN_HANDLED;
 }
 
 public Jump_Set(id)
 {
-    if (!is_user_alive(id)) return PLUGIN_HANDLED;
+    if (!is_user_alive(id))
+        return PLUGIN_HANDLED;
 
     if (equal(g_args, ""))
     {
@@ -170,55 +197,121 @@ public Jump_Set(id)
         return PLUGIN_HANDLED;
     }
 
-    if (!json_object_has_value(g_ktj_jumps, g_args))
+    new key[64];
+    new JSON:map_level, JSON:jump_data;
+    new bool:found = false;
+
+    for (new i = 0; i < json_object_get_count(g_ktj_jumps); i++)
+    {
+        json_object_get_name(g_ktj_jumps, i, key, charsmax(key));
+        map_level = json_object_get_value(g_ktj_jumps, key);
+
+        if (json_object_has_value(map_level, g_args))
+        {
+            if (!equal(key, current_map))
+            {
+                client_print_color(id, print_chat, "^4%s^1 Jump ^3%s^1 is on the map: ^3%s^1.", PLUGIN_TAG, g_args, key);
+                return PLUGIN_HANDLED;
+            }
+
+            jump_data = json_object_get_value(map_level, g_args);
+            found = true;
+            break;
+        }
+    }
+
+    if (!found || jump_data == Invalid_JSON)
     {
         client_print_color(id, print_chat, "^4%s^1 Jump ^3%s^1 does not exist.", PLUGIN_TAG, g_args);
         return PLUGIN_HANDLED;
     }
 
+    // Set player position and view angle
     new Float:jump_origin[3];
     new Float:jump_v_angle[3];
 
-    new JSON:jump_data = json_object_get_value(g_ktj_jumps, g_args);
+    jump_origin[0] = json_object_get_real(jump_data, "posx");
+    jump_origin[1] = json_object_get_real(jump_data, "posz");
+    jump_origin[2] = json_object_get_real(jump_data, "posy");
 
-    if (jump_data != Invalid_JSON)
-    {
-        jump_origin[0] = json_object_get_real(jump_data, "posx");
-        jump_origin[1] = json_object_get_real(jump_data, "posz");
-        jump_origin[2] = json_object_get_real(jump_data, "posy");
+    jump_v_angle[0] = json_object_get_real(jump_data, "pitch");
+    jump_v_angle[1] = json_object_get_real(jump_data, "yaw");
+    jump_v_angle[2] = 0.0;
 
-        jump_v_angle[0] = json_object_get_real(jump_data, "pitch");
-        jump_v_angle[1] = json_object_get_real(jump_data, "yaw");
-        jump_v_angle[2] = 0.0;
+    set_pev(id, pev_origin, jump_origin);
+    set_pev(id, pev_v_angle, jump_v_angle);
+    set_pev(id, pev_velocity, {0.0, 0.0, 0.0});
 
-        set_pev(id, pev_origin, jump_origin);
-        set_pev(id, pev_v_angle, jump_v_angle);
-        set_pev(id, pev_velocity, {0.0, 0.0, 0.0});
+    set_pev(id, pev_angles, jump_v_angle);
+    set_pev(id, pev_fixangle, 1);
 
-        set_pev(id, pev_angles, jump_v_angle);
-        set_pev(id, pev_fixangle, 1);
+    client_print_color(id, print_chat, "^4%s^1 Jump ^3%s^1 has been set.", PLUGIN_TAG, g_args);
 
-        // client_print_color(id, print_chat, "^4%s^1 (%f, %f, %f) yaw: %f, pitch %f", PLUGIN_TAG, jump_origin[0], jump_origin[2], jump_origin[1], jump_v_angle[0], jump_v_angle[1]);
-
-        client_print_color(id, print_chat, "^4%s^1 Jump ^3%s^1 has been set.", PLUGIN_TAG, g_args);
-        json_free(jump_data);
-    }
+    json_free(jump_data);
 
     return PLUGIN_HANDLED;
 }
+
+// public Jump_List(id)
+// {
+//     new menu = menu_create("[KTJ] Jumps Menu", "Menu_Handler");
+
+//     new key[64]; // jump name
+//     new JSON:jump_data;
+
+//     new map[32], currmap[32];
+
+//     get_mapname(currmap, charsmax(currmap));
+
+//     new count = json_object_get_count(g_ktj_jumps);
+//     for (new i = 0; i < count; i++)
+//     {
+//         json_object_get_name(g_ktj_jumps, i, key, charsmax(key));
+//         jump_data = json_object_get_value(g_ktj_jumps, key);
+//         json_object_get_string(jump_data, "map", map, charsmax(map));
+
+//         if (equal(map, currmap))
+//         {
+//             menu_additem(menu, key, key);
+//         }
+//     }
+
+//     json_free(jump_data);
+
+//     menu_setprop(menu, MPROP_EXIT, MEXIT_ALL);
+//     menu_display(id, menu, 0);
+
+//     return PLUGIN_HANDLED;
+// }
 
 public Jump_List(id)
 {
     new menu = menu_create("[KTJ] Jumps Menu", "Menu_Handler");
 
-    new key[64]; // jump name
+    new key[64]; // Jump name
 
-    for (new i = 0; i < json_object_get_count(g_ktj_jumps); i++)
+    new currmap[32];
+    get_mapname(currmap, charsmax(currmap));
+
+    // Get JSON object for the current map
+    if (!json_object_has_value(g_ktj_jumps, currmap))
     {
-        json_object_get_name(g_ktj_jumps, i, key, charsmax(key));
+        client_print_color(id, print_chat, "^4%s^1 No jumps found for this map.", PLUGIN_TAG);
+        menu_destroy(menu);
+        return PLUGIN_HANDLED;
+    }
 
+    new JSON:map_data = json_object_get_value(g_ktj_jumps, currmap);
+
+    new count = json_object_get_count(map_data);
+    for (new i = 0; i < count; i++)
+    {
+        // Get each jump name and add to menu
+        json_object_get_name(map_data, i, key, charsmax(key));
         menu_additem(menu, key, key);
     }
+
+    // DO NOT free map_data if json_object_get_value only gives a reference
 
     menu_setprop(menu, MPROP_EXIT, MEXIT_ALL);
     menu_display(id, menu, 0);
