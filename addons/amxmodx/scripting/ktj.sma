@@ -6,21 +6,11 @@
 #pragma semicolon 1
 
 #define PLUGIN "komi's TrickJumps"
-#define VERSION "0.2u"
+#define VERSION "0.3u"
 #define AUTHOR "komidan"
 
 #define PLUGIN_TAG "[KJT]"
-
-/**
- * JSON Format:
- *
- * "<mapname>": {
- *     "<jump-name>": {
- *         <jump-data>,
- *     }
- * }
- *
- */
+#define PLUGIN_FILE "addons/amxmodx/data/ktj_jumps.json"
 
 new g_args[64];
 new JSON:g_ktj_jumps = Invalid_JSON;
@@ -39,18 +29,18 @@ public plugin_init()
     get_mapname(current_map, charsmax(current_map));
 
     // Create file if doesn't exist.
-    if (!file_exists("addons/amxmodx/data/kjt_jumps.json"))
+    if (!file_exists(PLUGIN_FILE))
     {
         new JSON:data = json_init_object();
 
-        if (!json_serial_to_file(data, "addons/amxmodx/data/kjt_jumps.json"))
+        if (!json_serial_to_file(data, PLUGIN_FILE))
         {
-            server_print("[KJT] File Failed to be created.");
+            server_print("[KJT] File failed to be created.");
         }
     }
     else
     {
-        g_ktj_jumps = json_parse("addons/amxmodx/data/kjt_jumps.json", true);
+        g_ktj_jumps = json_parse(PLUGIN_FILE, true);
         if (g_ktj_jumps == Invalid_JSON)
         {
             g_ktj_jumps = json_init_object();
@@ -93,6 +83,10 @@ public Chat_Command_Handler(id)
     else if (equal(cmd, "/jumps"))
     {
         Jump_List(id);
+    }
+    else if (equal(cmd, "/ktj"))
+    {
+        client_print_color(id, print_chat, "^4%s^1 komi's TrickJumping version %s", PLUGIN_TAG, VERSION);
     }
 
     return PLUGIN_HANDLED;
@@ -140,7 +134,7 @@ public Jump_Create(id)
         json_object_set_value(g_ktj_jumps, current_map, map_level);
     }
 
-    if (!json_serial_to_file(g_ktj_jumps, "addons/amxmodx/data/kjt_jumps.json"))
+    if (!json_serial_to_file(g_ktj_jumps, PLUGIN_FILE))
     {
         client_print_color(id, print_chat, "^4%s^1 JSON Failed to Save");
         return PLUGIN_HANDLED;
@@ -177,7 +171,7 @@ public Jump_Delete(id)
     }
 
     // Rewrite the json object.
-    if (!json_serial_to_file(g_ktj_jumps, "addons/amxmodx/data/kjt_jumps.json"))
+    if (!json_serial_to_file(g_ktj_jumps, PLUGIN_FILE))
     {
         client_print_color(id, print_chat, "^4%s^1 JSON Failed to Save");
     }
