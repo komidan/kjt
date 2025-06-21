@@ -6,13 +6,13 @@
 #pragma semicolon 1
 
 #define PLUGIN "komi's TrickJumps"
-#define VERSION "0.1u"
+#define VERSION "0.2u"
 #define AUTHOR "komidan"
 
 #define PLUGIN_TAG "[KJT]"
 
-new g_jumpname[64];
-new JSON:g_kjt_jumps = Invalid_JSON;
+new g_args[64];
+new JSON:g_ktj_jumps = Invalid_JSON;
 
 public plugin_init()
 {
@@ -21,7 +21,8 @@ public plugin_init()
     register_clcmd("say", "Chat_Command_Handler");
     register_clcmd("say_team", "Chat_Command_Handler");
 
-    register_event("ResetHUD", "autoload", "b");
+    register_concmd("exportjump", "Jump_Export");
+    register_concmd("importjump", "Jump_Import");
 
     // Create file if doesn't exist.
     if (!file_exists("addons/amxmodx/data/kjt_jumps.json"))
@@ -35,10 +36,10 @@ public plugin_init()
     }
     else
     {
-        g_kjt_jumps = json_parse("addons/amxmodx/data/kjt_jumps.json", true);
-        if (g_kjt_jumps == Invalid_JSON)
+        g_ktj_jumps = json_parse("addons/amxmodx/data/kjt_jumps.json", true);
+        if (g_ktj_jumps == Invalid_JSON)
         {
-            g_kjt_jumps = json_init_object();
+            g_ktj_jumps = json_init_object();
         }
     }
 
@@ -46,10 +47,10 @@ public plugin_init()
 
 public plugin_end()
 {
-    if (g_kjt_jumps != Invalid_JSON)
+    if (g_ktj_jumps != Invalid_JSON)
     {
-        json_free(g_kjt_jumps);
-        g_kjt_jumps = Invalid_JSON;
+        json_free(g_ktj_jumps);
+        g_ktj_jumps = Invalid_JSON;
     }
 }
 
@@ -59,23 +60,25 @@ public Chat_Command_Handler(id)
     read_args(args, charsmax(args));
     remove_quotes(args);
 
-    new cmd[64], jumpname[64];
-    parse(args, cmd, charsmax(cmd), jumpname, charsmax(jumpname));
+    new cmd[64], arg1[64];
+    parse(args, cmd, charsmax(cmd), arg1, charsmax(arg1));
 
+    g_args = arg1;
     if (equal(cmd, "/createjump"))
     {
-        g_jumpname = jumpname;
         Jump_Create(id);
     }
     else if (equal(cmd, "/deletejump"))
     {
-        g_jumpname = jumpname;
         Jump_Delete(id);
     }
     else if (equal(cmd, "/setjump"))
     {
-        g_jumpname = jumpname;
         Jump_Set(id);
+    }
+    else if (equal(cmd, "/jumps"))
+    {
+        Jump_List(id);
     }
 
     return PLUGIN_HANDLED;
@@ -85,19 +88,16 @@ public Jump_Create(id)
 {
     if (!is_user_alive(id)) return PLUGIN_HANDLED;
 
-    if (equal(g_jumpname, ""))
+    if (equal(g_args, ""))
     {
         client_print_color(id, print_chat, "^4%s^1 Usage: /createjump <name>", PLUGIN_TAG);
         return PLUGIN_HANDLED;
     }
 
-    if (json_object_has_value(g_kjt_jumps, g_jumpname))
+    if (json_object_has_value(g_ktj_jumps, g_args))
     {
-        client_print_color(id, print_chat, "^4%s^1 Warning: Jump %s already existed, it will be overwritten.", PLUGIN_TAG, g_jumpname);
+        client_print_color(id, print_chat, "^4%s^1 Warning: Jump %s already existed, it will be overwritten.", PLUGIN_TAG, g_args);
     }
-
-    new author[32];
-    get_user_name(id, author, charsmax(author));
 
     new Float:origin[3];
     new Float:v_angles[3];
@@ -105,14 +105,9 @@ public Jump_Create(id)
     pev(id, pev_origin, origin);
     pev(id, pev_v_angle, v_angles);
 
-    // Dev Logs
-    // client_print_color(id, print_chat, "^4%s^1 Jump ^3%s^1 created. (%f, %f, %f) pitch: %f, yaw: %f", PLUGIN_TAG, g_jumpname, origin[0], origin[2], origin[1], v_angles[0], v_angles[1]);
-    // client_print_color(id, print_chat, "^4%f %f %f^1", v_angles[0], v_angles[1], v_angles[2]);
-
     // Write JSON
     new JSON:jump_data = json_init_object();
 
-    json_object_set_string(jump_data, "author", author);
     json_object_set_real(jump_data, "posx", origin[0]);
     json_object_set_real(jump_data, "posy", origin[2]);
     json_object_set_real(jump_data, "posz", origin[1]);
@@ -121,13 +116,15 @@ public Jump_Create(id)
     json_object_set_real(jump_data, "pitch", v_angles[0]);
     // Don't set ROLL value here, don't need it!
 
-    json_object_set_value(g_kjt_jumps, g_jumpname, jump_data);
+    json_object_set_value(g_ktj_jumps, g_args, jump_data);
 
-    if (!json_serial_to_file(g_kjt_jumps, "addons/amxmodx/data/kjt_jumps.json"))
+    if (!json_serial_to_file(g_ktj_jumps, "addons/amxmodx/data/kjt_jumps.json"))
     {
         client_print_color(id, print_chat, "^4%s^1 JSON Failed to Save");
+        return PLUGIN_HANDLED;
     }
 
+    client_print_color(id, print_chat, "^4%s^1 Jump ^3%s^1 created.", PLUGIN_TAG, g_args);
     json_free(jump_data);
 
     return PLUGIN_HANDLED;
@@ -138,24 +135,24 @@ public Jump_Delete(id)
 {
     if (!is_user_alive(id)) return PLUGIN_HANDLED;
 
-    if (equal(g_jumpname, ""))
+    if (equal(g_args, ""))
     {
         client_print_color(id, print_chat, "^4%s^1 Usage: /deletejump <name>", PLUGIN_TAG);
         return PLUGIN_HANDLED;
     }
 
-    if (!json_object_has_value(g_kjt_jumps, g_jumpname))
+    if (!json_object_has_value(g_ktj_jumps, g_args))
     {
-        client_print_color(id, print_chat, "^4%s%1 Jump ^3%s^1 does not exist.", PLUGIN_TAG, g_jumpname);
+        client_print_color(id, print_chat, "^4%s^1 Jump ^3%s^1 does not exist.", PLUGIN_TAG, g_args);
     }
 
-    if (json_object_remove(g_kjt_jumps, g_jumpname))
+    if (json_object_remove(g_ktj_jumps, g_args))
     {
-        client_print_color(id, print_chat, "^4%s^1 Jump ^3%s^1 deleted successfully.", PLUGIN_TAG, g_jumpname);
+        client_print_color(id, print_chat, "^4%s^1 Jump ^3%s^1 deleted successfully.", PLUGIN_TAG, g_args);
     }
 
     // Rewrite the json object.
-    if (!json_serial_to_file(g_kjt_jumps, "addons/amxmodx/data/kjt_jumps.json"))
+    if (!json_serial_to_file(g_ktj_jumps, "addons/amxmodx/data/kjt_jumps.json"))
     {
         client_print_color(id, print_chat, "^4%s^1 JSON Failed to Save");
     }
@@ -167,27 +164,25 @@ public Jump_Set(id)
 {
     if (!is_user_alive(id)) return PLUGIN_HANDLED;
 
-    if (equal(g_jumpname, ""))
+    if (equal(g_args, ""))
     {
-        client_print_color(id, print_chat, "^4%s^1 Usage: /deletejump <name>", PLUGIN_TAG);
+        Jump_List(id);
         return PLUGIN_HANDLED;
     }
 
-    if (!json_object_has_value(g_kjt_jumps, g_jumpname))
+    if (!json_object_has_value(g_ktj_jumps, g_args))
     {
-        client_print_color(id, print_chat, "^4%s%1 Jump ^3%s^1 does not exist.", PLUGIN_TAG, g_jumpname);
+        client_print_color(id, print_chat, "^4%s^1 Jump ^3%s^1 does not exist.", PLUGIN_TAG, g_args);
+        return PLUGIN_HANDLED;
     }
 
     new Float:jump_origin[3];
     new Float:jump_v_angle[3];
-    new author[32];
 
-    new JSON:jump_data = json_object_get_value(g_kjt_jumps, g_jumpname);
+    new JSON:jump_data = json_object_get_value(g_ktj_jumps, g_args);
 
     if (jump_data != Invalid_JSON)
     {
-        json_object_get_string(jump_data, "author", author, charsmax(author));
-
         jump_origin[0] = json_object_get_real(jump_data, "posx");
         jump_origin[1] = json_object_get_real(jump_data, "posz");
         jump_origin[2] = json_object_get_real(jump_data, "posy");
@@ -203,24 +198,64 @@ public Jump_Set(id)
         set_pev(id, pev_angles, jump_v_angle);
         set_pev(id, pev_fixangle, 1);
 
-        // Dev Logs
-        // client_print_color(id, print_chat, "^4%s^1 Jump ^3%s^1 (created by ^3%s^1) has been set.", PLUGIN_TAG, g_jumpname, author);
         // client_print_color(id, print_chat, "^4%s^1 (%f, %f, %f) yaw: %f, pitch %f", PLUGIN_TAG, jump_origin[0], jump_origin[2], jump_origin[1], jump_v_angle[0], jump_v_angle[1]);
 
+        client_print_color(id, print_chat, "^4%s^1 Jump ^3%s^1 has been set.", PLUGIN_TAG, g_args);
         json_free(jump_data);
     }
 
     return PLUGIN_HANDLED;
 }
 
-public autoload(id)
+public Jump_List(id)
 {
-    if (!is_user_connected(id)) return;
+    new menu = menu_create("[KTJ] Jumps Menu", "Menu_Handler");
 
-    new name[32];
-    get_user_name(id, name, charsmax(name));
+    new key[64]; // jump name
 
-    client_print_color(id, print_chat,
-        "^4%s^1 Welcome ^3%s^1", PLUGIN_TAG, name
-    );
+    for (new i = 0; i < json_object_get_count(g_ktj_jumps); i++)
+    {
+        json_object_get_name(g_ktj_jumps, i, key, charsmax(key));
+
+        menu_additem(menu, key, key);
+    }
+
+    menu_setprop(menu, MPROP_EXIT, MEXIT_ALL);
+    menu_display(id, menu, 0);
+
+    return PLUGIN_HANDLED;
+}
+
+public Menu_Handler(id, menu, item)
+{
+    if (item == MENU_EXIT)
+    {
+        menu_destroy(menu);
+        return PLUGIN_HANDLED;
+    }
+
+    new data[64], access;
+    menu_item_getinfo(menu, item, access, data, charsmax(data));
+
+    new name_user[32];
+    get_user_name(id, name_user, charsmax(name_user));
+    amxclient_cmd(id, "say", "/setjump", data);
+
+    menu_destroy(menu);
+    return PLUGIN_HANDLED;
+}
+
+/**
+ * Problems I've faced with these functions are engine constraints.
+ * Can't print >256 characters to the console (?). No idea
+ * how to get around this engine limitation. Oh Brainstorming!
+ */
+public Jump_Export(id)
+{
+    return PLUGIN_HANDLED;
+}
+
+public Jump_Import(id)
+{
+    return PLUGIN_HANDLED;
 }
