@@ -20,8 +20,8 @@ public plugin_init()
 {
     register_plugin(PLUGIN, VERSION, AUTHOR);
 
-    register_clcmd("say", "Chat_Command_Handler");
-    register_clcmd("say_team", "Chat_Command_Handler");
+    register_clcmd("say", "chat_command_handler");
+    register_clcmd("say_team", "chat_command_handler");
 
     register_concmd("exportjump", "Jump_Export");
     register_concmd("importjump", "Jump_Import");
@@ -60,7 +60,7 @@ public plugin_end()
     return PLUGIN_HANDLED;
 }
 
-public Chat_Command_Handler(id)
+public chat_command_handler(id)
 {
     new args[128];
     read_args(args, charsmax(args));
@@ -72,15 +72,15 @@ public Chat_Command_Handler(id)
     g_args = arg1;
     if (equal(cmd, "/createjump"))
     {
-        Jump_Create(id);
+        jump_create(id);
     }
     else if (equal(cmd, "/deletejump"))
     {
-        Jump_Delete(id);
+        jump_delete(id);
     }
     else if (equal(cmd, "/setjump"))
     {
-        Jump_Set(id);
+        jump_set(id);
     }
     else if (equal(cmd, "/ktj"))
     {
@@ -90,7 +90,7 @@ public Chat_Command_Handler(id)
     return PLUGIN_HANDLED;
 }
 
-public Jump_Create(id)
+public jump_create(id)
 {
     if (!is_user_alive(id)) return PLUGIN_HANDLED;
 
@@ -146,13 +146,13 @@ public Jump_Create(id)
 
 }
 
-public Jump_Delete(id)
+public jump_delete(id)
 {
     if (!is_user_alive(id)) return PLUGIN_HANDLED;
 
     if (equal(g_args, ""))
     {
-        Delete_Jump_Menu(id);
+        delete_jump_menu(id);
         return PLUGIN_HANDLED;
     }
 
@@ -178,14 +178,14 @@ public Jump_Delete(id)
     return PLUGIN_HANDLED;
 }
 
-public Jump_Set(id)
+public jump_set(id)
 {
     if (!is_user_alive(id))
         return PLUGIN_HANDLED;
 
     if (equal(g_args, ""))
     {
-        Set_Jump_Menu(id);
+        set_jump_menu(id);
         return PLUGIN_HANDLED;
     }
 
@@ -242,9 +242,13 @@ public Jump_Set(id)
     return PLUGIN_HANDLED;
 }
 
-public Delete_Jump_Menu(id)
+/**
+ * TODO: Maybe make these menu's use a stock function
+ * to populate the menu... don't repeat code fr bro.
+ */
+public delete_jump_menu(id)
 {
-    new menu = menu_create("[K-TJ] Delete Jumps Menu", "Delete_Jump_Menu_Handler");
+    new menu = menu_create("[K-TJ] Delete Jumps Menu", "delete_jump_menu_Handler");
 
     new key[64]; // Jump name
 
@@ -268,7 +272,7 @@ public Delete_Jump_Menu(id)
     return PLUGIN_HANDLED;
 }
 
-public Delete_Jump_Menu_Handler(id, menu, item)
+public delete_jump_menu_handler(id, menu, item)
 {
     if (item == MENU_EXIT)
     {
@@ -287,9 +291,9 @@ public Delete_Jump_Menu_Handler(id, menu, item)
     return PLUGIN_HANDLED;
 }
 
-public Set_Jump_Menu(id)
+public set_jump_menu(id)
 {
-    new menu = menu_create("[K-TJ] Jumps Menu", "Set_Jump_Menu_Handler");
+    new menu = menu_create("[K-TJ] Jumps Menu", "set_jump_menu_Handler");
 
     new key[64]; // Jump name
 
@@ -314,7 +318,7 @@ public Set_Jump_Menu(id)
     return PLUGIN_HANDLED;
 }
 
-public Set_Jump_Menu_Handler(id, menu, item)
+public set_jump_menu_handler(id, menu, item)
 {
     if (item == MENU_EXIT)
     {
@@ -338,12 +342,12 @@ public Set_Jump_Menu_Handler(id, menu, item)
  * Can't print >256 characters to the console (?). No idea
  * how to get around this engine limitation. Oh Brainstorming!
  */
-public Jump_Export(id)
+public jump_export(id)
 {
     return PLUGIN_HANDLED;
 }
 
-public Jump_Import(id)
+public jump_import(id)
 {
     return PLUGIN_HANDLED;
 }

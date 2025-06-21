@@ -5,9 +5,9 @@
 This plugin is meant to make trickjumping more popular by creating commands that enable sharing and managing jumps easier.
 
 ### Installation
-Head over to the [releases](https://github.com/komidan/ktj/releases) and download the latest one, build from source, or to get the most up-to-date with all commits you can use `.\addons\amxmodx\plugins\ktj.amxx` from source. It's kept up to date, but keep in mind it's most likely very unstable! Follow these steps once you have the plugin file installed:
-1. Move `ktj.amxx` to `.\Half-life\cstrike\addons\amxmodx\plugins\`.
-2. Edit `...\addons\amxmodx\configs\plugins.ini` by adding `ktj.amxx` to the bottom of the file.
+Download the latest [release](https://github.com/komidan/ktj/releases), build from source, or to get the most up-to-date with all commits you can use `./addons/amxmodx/plugins/ktj.amxx` from source. It's kept up to date with every push I make, but keep in mind it's most likely unstable! Follow these steps once you have the plugin file:
+1. Move `ktj.amxx` to `./Half-life/cstrike/addons/amxmodx/plugins/`.
+2. Edit `.../addons/amxmodx/configs/plugins.ini` by adding `ktj.amxx` to the bottom of the file.
 3. Launch Counter-Strike 1.6 to see if it worked. If not then... ask someone?
 
 ### Feature List
