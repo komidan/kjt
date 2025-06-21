@@ -7,7 +7,7 @@
 #pragma semicolon 1
 
 #define PLUGIN "komi's TrickJumps"
-#define VERSION "0.5.0u"
+#define VERSION "0.5.0"
 #define AUTHOR "komidan"
 
 #define PLUGIN_TAG "[K-TJ]"
@@ -191,36 +191,7 @@ public jump_set(id)
         return PLUGIN_HANDLED;
     }
 
-    // new key[64];
-    // new JSON:map_level;
-    // new bool:found = false;
-
     new JSON:jump_data = ktj_jump_get(g_ktj_jumps, current_map, g_args);
-    // // Loop through g_ktj_jumps to find the jump name's contents of 'g_args'.
-    // for (new i = 0; i < json_object_get_count(g_ktj_jumps); i++)
-    // {
-    //     json_object_get_name(g_ktj_jumps, i, key, charsmax(key));
-    //     map_level = json_object_get_value(g_ktj_jumps, key);
-
-    //     if (json_object_has_value(map_level, g_args))
-    //     {
-    //         if (!equal(key, current_map))
-    //         {
-    //             client_print_color(id, print_chat, "^4%s^1 Jump ^3%s^1 is on the map: ^3%s^1.", PLUGIN_TAG, g_args, key);
-    //             return PLUGIN_HANDLED;
-    //         }
-
-    //         jump_data = json_object_get_value(map_level, g_args);
-    //         found = true;
-    //         break;
-    //     }
-    // }
-
-    // if (!found || jump_data == Invalid_JSON)
-    // {
-    //     client_print_color(id, print_chat, "^4%s^1 Jump ^3%s^1 does not exist.", PLUGIN_TAG, g_args);
-    //     return PLUGIN_HANDLED;
-    // }
 
     // Set player position and view angle
     new Float:jump_origin[3];
