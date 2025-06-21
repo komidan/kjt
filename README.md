@@ -2,7 +2,7 @@
 ![trickyumpslogo](res/trickyumps_3.png)
 
 # komi's Trickjumps
-This plugin is mean't to make trickjumping more popular by creating commands that make sharing jumps easier.
+This plugin is meant to make trickjumping more popular by creating commands that make sharing and managing jumps easier.
 
 ### Feature List
 | Name            | Description                                                                                 | Status |
