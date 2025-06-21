@@ -24,6 +24,7 @@ This plugin is meant to make trickjumping more popular by creating commands that
 `/createjump <name>` - Creates a jump.\
 `/deletejump <name>` - Deletes a jump.\
 `/setjump <name>` - Sets jump, teleport player to location. Don't pass <name> for jump list.\
-`/jumps` - Opens the jumps list.
+`/jumps` - Opens the jumps list.\
+`/ktj` - About the plugin.
 
 more on the way...
