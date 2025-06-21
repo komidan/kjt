@@ -250,19 +250,15 @@ public Jump_List(id)
 
     new key[64]; // Jump name
 
-    new currmap[32];
-    get_mapname(currmap, charsmax(currmap));
-
-    if (!json_object_has_value(g_ktj_jumps, currmap))
+    new JSON:map_data = json_object_get_value(g_ktj_jumps, current_map);
+    new count = json_object_get_count(map_data);
+    if (map_data == Invalid_JSON || count == 0)
     {
         client_print_color(id, print_chat, "^4%s^1 No jumps found for this map.", PLUGIN_TAG);
         menu_destroy(menu);
         return PLUGIN_HANDLED;
     }
 
-    new JSON:map_data = json_object_get_value(g_ktj_jumps, currmap);
-
-    new count = json_object_get_count(map_data);
     for (new i = 0; i < count; i++)
     {
         json_object_get_name(map_data, i, key, charsmax(key));
