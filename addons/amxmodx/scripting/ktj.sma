@@ -82,7 +82,7 @@ public Chat_Command_Handler(id)
     }
     else if (equal(cmd, "/jumps"))
     {
-        Jump_List(id);
+        Set_Jump_Menu(id);
     }
     else if (equal(cmd, "/ktj"))
     {
@@ -154,7 +154,7 @@ public Jump_Delete(id)
 
     if (equal(g_args, ""))
     {
-        client_print_color(id, print_chat, "^4%s^1 Usage: /deletejump <name>", PLUGIN_TAG);
+        Delete_Jump_Menu(id);
         return PLUGIN_HANDLED;
     }
 
@@ -187,7 +187,7 @@ public Jump_Set(id)
 
     if (equal(g_args, ""))
     {
-        Jump_List(id);
+        Set_Jump_Menu(id);
         return PLUGIN_HANDLED;
     }
 
@@ -244,9 +244,9 @@ public Jump_Set(id)
     return PLUGIN_HANDLED;
 }
 
-public Jump_List(id)
+public Delete_Jump_Menu(id)
 {
-    new menu = menu_create("[KTJ] Jumps Menu", "Menu_Handler");
+    new menu = menu_create("[K-TJ] Delete Jumps Menu", "Delete_Jump_Menu_Handler");
 
     new key[64]; // Jump name
 
@@ -270,7 +270,53 @@ public Jump_List(id)
     return PLUGIN_HANDLED;
 }
 
-public Menu_Handler(id, menu, item)
+public Delete_Jump_Menu_Handler(id, menu, item)
+{
+    if (item == MENU_EXIT)
+    {
+        menu_destroy(menu);
+        return PLUGIN_HANDLED;
+    }
+
+    new data[64], access;
+    menu_item_getinfo(menu, item, access, data, charsmax(data));
+
+    new name_user[32];
+    get_user_name(id, name_user, charsmax(name_user));
+    amxclient_cmd(id, "say", "/deletejump", data);
+
+    menu_destroy(menu);
+    return PLUGIN_HANDLED;
+}
+
+public Set_Jump_Menu(id)
+{
+    new menu = menu_create("[K-TJ] Jumps Menu", "Set_Jump_Menu_Handler");
+
+    new key[64]; // Jump name
+
+    new JSON:map_data = json_object_get_value(g_ktj_jumps, current_map);
+    new count;
+    if (map_data == Invalid_JSON || json_object_get_count(map_data))
+    {
+        client_print_color(id, print_chat, "^4%s^1 No jumps found for this map.", PLUGIN_TAG);
+        menu_destroy(menu);
+        return PLUGIN_HANDLED;
+    }
+    count = json_object_get_count(map_data);
+
+    for (new i = 0; i < count; i++)
+    {
+        json_object_get_name(map_data, i, key, charsmax(key));
+        menu_additem(menu, key, key);
+    }
+
+    menu_setprop(menu, MPROP_EXIT, MEXIT_ALL);
+    menu_display(id, menu, 0);
+    return PLUGIN_HANDLED;
+}
+
+public Set_Jump_Menu_Handler(id, menu, item)
 {
     if (item == MENU_EXIT)
     {
