@@ -297,7 +297,7 @@ public Set_Jump_Menu(id)
 
     new JSON:map_data = json_object_get_value(g_ktj_jumps, current_map);
     new count;
-    if (map_data == Invalid_JSON || json_object_get_count(map_data))
+    if (map_data == Invalid_JSON || json_object_get_count(map_data) == 0)
     {
         client_print_color(id, print_chat, "^4%s^1 No jumps found for this map.", PLUGIN_TAG);
         menu_destroy(menu);
