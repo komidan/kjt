@@ -30,6 +30,8 @@ Download the latest [release](https://github.com/komidan/ktj/releases), build fr
 `/deletejump <name>` - Deletes a jump. Don't pass any arguments for delete list.\
 `/setjump <name>` - Sets jump, teleports player to location. Don't pass any arguments for jump list.\
 `/ktj` - About the plugin.
+`exportjump` - Writes the json object to console to copy and paste and use inside `importjump`.\
+`importjump` - Imports a json string taken from `exportjump`.
 
 more on the way...
 

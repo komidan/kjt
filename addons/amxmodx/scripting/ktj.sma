@@ -7,7 +7,7 @@
 #pragma semicolon 1
 
 #define PLUGIN "komi's TrickJumps"
-#define VERSION "0.4.2u"
+#define VERSION "0.5.0u"
 #define AUTHOR "komidan"
 
 #define PLUGIN_TAG "[K-TJ]"
