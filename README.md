@@ -14,7 +14,7 @@ Download the latest [release](https://github.com/komidan/ktj/releases), build fr
 | Name             | Description                                                                                 | Status |
 | ---------------- | ------------------------------------------------------------------------------------------- | :----: |
 | Jump Management  | Ability to manage jumps, including creating, deleting, and setting them.                    |   🟢    |
-| Jump Sharing     | By typing a command, receive an encoded string which you can load to create a jump locally. |   🟡    |
+| Jump Sharing     | By typing a command, receive an encoded string which you can load to create a jump locally. |   🟣    |
 | Jump Measurement | Measure a start and end location for a jump to track if you land the jump or not (?).       |   ⚪    |
 
 #### !!! NEED SUGGESTIONS, PLEASE GIVE ME JUICY SUGGESTIONS !!!
@@ -22,6 +22,7 @@ Download the latest [release](https://github.com/komidan/ktj/releases), build fr
 #### Legend
 🟢 Finished\
 🟡 In-Progress\
+🟣 Slightly Working\
 🔵 Need-Help\
 ⚪ Not-Started
 
@@ -31,7 +32,8 @@ Download the latest [release](https://github.com/komidan/ktj/releases), build fr
 `/setjump <name>` - Sets jump, teleports player to location. Don't pass any arguments for jump list.\
 `/ktj` - About the plugin.\
 `exportjump` - Writes the json object to console to copy and paste and use inside `importjump`.\
-`importjump` - Imports a json string taken from `exportjump`.
+`importjump` - Imports a json string taken from `exportjump`.\
+`renamejump` - Renames a jump that exists on the current map.
 
 more on the way...
 

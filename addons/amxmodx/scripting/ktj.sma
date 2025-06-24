@@ -7,7 +7,7 @@
 #pragma semicolon 1
 
 #define PLUGIN "komi's TrickJumps"
-#define VERSION "0.5.0"
+#define VERSION "0.6.0"
 #define AUTHOR "komidan"
 
 #define PLUGIN_TAG "[K-TJ]"
@@ -24,8 +24,9 @@ public plugin_init()
     register_clcmd("say", "chat_command_handler");
     register_clcmd("say_team", "chat_command_handler");
 
-    register_concmd("exportjump", "jump_export");
-    register_concmd("importjump", "jump_import");
+    register_concmd("exportjump", "jump_export", -1, "<jump_name>");
+    register_concmd("importjump", "jump_import", -1, "<encoded_string>");
+    register_concmd("renamejump", "jump_rename", -1, "<old_name> <new_name>");
 
     get_mapname(current_map, charsmax(current_map));
 
@@ -65,7 +66,7 @@ public chat_command_handler(id)
     read_args(args, charsmax(args));
     remove_quotes(args);
 
-    new cmd[64], arg1[64];
+    new cmd[32], arg1[32];
     parse(args, cmd, charsmax(cmd), arg1, charsmax(arg1));
 
     // Handler for say commands, checks cmd argument.
@@ -134,11 +135,7 @@ public jump_create(id)
         json_object_set_value(g_ktj_jumps, current_map, map_level);
     }
 
-    if (!json_serial_to_file(g_ktj_jumps, PLUGIN_FILE))
-    {
-        client_print_color(id, print_chat, "^4%s^1 JSON Failed to Save");
-        return PLUGIN_HANDLED;
-    }
+    save_json(g_ktj_jumps, PLUGIN_FILE);
 
     client_print_color(id, print_chat, "^4%s^1 Jump ^3%s^1 created.", PLUGIN_TAG, g_args);
 
@@ -170,11 +167,7 @@ public jump_delete(id)
         client_print_color(id, print_chat, "^4%s^1 Jump ^3%s^1 deleted successfully.", PLUGIN_TAG, g_args);
     }
 
-    // Rewrite the json object.
-    if (!json_serial_to_file(g_ktj_jumps, PLUGIN_FILE))
-    {
-        client_print_color(id, print_chat, "^4%s^1 JSON Failed to Save");
-    }
+    save_json(g_ktj_jumps, PLUGIN_FILE);
 
     json_free(map_level);
     return PLUGIN_HANDLED;
@@ -182,8 +175,7 @@ public jump_delete(id)
 
 public jump_set(id)
 {
-    if (!is_user_alive(id))
-        return PLUGIN_HANDLED;
+    if (!is_user_alive(id)) return PLUGIN_HANDLED;
 
     if (equal(g_args, ""))
     {
@@ -213,6 +205,53 @@ public jump_set(id)
     set_pev(id, pev_fixangle, 1);
 
     client_print_color(id, print_chat, "^4%s^1 Jump ^3%s^1 has been set.", PLUGIN_TAG, g_args);
+    json_free(jump_data);
+    return PLUGIN_HANDLED;
+}
+
+public jump_rename(id)
+{
+    new arg1[32], arg2[32];
+    read_argv(1, arg1, charsmax(arg1));
+    read_argv(2, arg2, charsmax(arg2));
+
+    if (!is_user_alive(id)) return PLUGIN_HANDLED;
+
+    if (equal(arg1, "") || equal(arg2, ""))
+    {
+        client_print(id, print_console, "%s Usage: /renamejump <old_name> <new_name>", PLUGIN_TAG);
+        return PLUGIN_HANDLED;
+    }
+
+    if (!ktj_jump_exists(g_ktj_jumps, current_map, arg1))
+    {
+        client_print(id, print_console, "%s Jump '%s' doesn't exist.", PLUGIN_TAG, arg1);
+        return PLUGIN_HANDLED;
+    }
+
+    new JSON:old_jump_data = ktj_jump_get(g_ktj_jumps, current_map, arg1);
+    if (old_jump_data == Invalid_JSON)
+    {
+        client_print(id, print_console, "%s Invalid JSON Error", PLUGIN_TAG);
+        return PLUGIN_HANDLED;
+    }
+
+    new JSON:map_level = json_object_get_value(g_ktj_jumps, current_map);
+    if (json_object_has_value(map_level, arg2))
+    {
+        client_print(id, print_console, "%s Jump '%s' already exists. Choose another name.", PLUGIN_TAG, arg2);
+        return PLUGIN_HANDLED;
+    }
+
+    new JSON:jump_data = json_object_get_value(map_level, arg1);
+    json_object_set_value(map_level, arg2, jump_data);
+    json_object_remove(map_level, arg1);
+
+    save_json(g_ktj_jumps, PLUGIN_FILE);
+
+    client_print(id, print_console, "%s Jump %s renamed to %s", PLUGIN_TAG, arg1, arg2);
+    json_free(map_level);
+    json_free(old_jump_data);
     json_free(jump_data);
     return PLUGIN_HANDLED;
 }
@@ -312,11 +351,6 @@ public set_jump_menu_handler(id, menu, item)
     return PLUGIN_HANDLED;
 }
 
-/**
- * Problems I've faced with these functions are engine constraints.
- * Can't print >256 characters to the console (?). No idea
- * how to get around this engine limitation. Oh 1.6!
- */
 public jump_export(id)
 {
     new arg[32]; // Name of the jump to export.

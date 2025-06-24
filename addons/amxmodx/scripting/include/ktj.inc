@@ -81,3 +81,19 @@ stock bool:ktj_jump_exists(JSON:top_level_json, const map_name[], const jump_nam
 
     return true;
 }
+
+/**
+ * Saves JSON to file
+ *
+ * @param object      The JSON object to save
+ * @param file_path   Path to save the file at
+ */
+stock bool:save_json(JSON:object, const file_path[])
+{
+    if (!json_serial_to_file(object, file_path))
+    {
+        return false;
+    }
+
+    return true;
+}
