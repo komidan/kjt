@@ -7,3 +7,6 @@ compiler/
 *.obj
 *.lib
 *.py
+
+# Old Code
+old_*

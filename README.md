@@ -30,10 +30,10 @@ Download the latest [release](https://github.com/komidan/ktj/releases), build fr
 `/createjump <name>` - Creates a jump with \<name\> as a specifier.\
 `/deletejump <name>` - Deletes a jump. Don't pass any arguments for delete list.\
 `/setjump <name>` - Sets jump, teleports player to location. Don't pass any arguments for jump list.\
-`/ktj` - About the plugin.\
+`/renamejump <old_name> <new_name>` - Renames a jump that exists on the current map.\
+`/tj` - Plugin about information.\
 `exportjump` - Writes the json object to console to copy and paste and use inside `importjump`.\
-`importjump` - Imports a json string taken from `exportjump`.\
-`renamejump` - Renames a jump that exists on the current map.
+`importjump` - Imports a json string taken from `exportjump`.
 
 more on the way...
 
